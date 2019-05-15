@@ -12,7 +12,7 @@ public:
 	bool pluginState;
 	void discordInit();
 	void UpdateState();
-	time_t SystemTime2Timet(const SYSTEMTIME& st);
+	time_t SystemTime2Timet(const SYSTEMTIME&);
 	bool GetPluginInfo(TVTest::PluginInfo *pInfo) override
 	{
 		pInfo->Type = TVTest::PLUGIN_TYPE_NORMAL;
@@ -56,24 +56,37 @@ void CMyPlugin::UpdateState()
 	Info.MaxEventText = sizeof(eventText) / sizeof(eventText[0]);
 	Info.pszEventExtText = eventExtText;
 	Info.MaxEventExtText = sizeof(eventExtText) / sizeof(eventExtText[0]);
-	if (m_pApp->GetCurrentChannelInfo(&ChannelInfo) && m_pApp->GetCurrentProgramInfo(&Info)) {
-		DiscordRichPresence discordPresence;
-		memset(&discordPresence, 0, sizeof(discordPresence));
-		discordPresence.details = wide_to_utf8(ChannelInfo.szChannelName).c_str();
-		discordPresence.state = wide_to_utf8(Info.pszEventName).c_str();
-		discordPresence.startTimestamp = SystemTime2Timet(Info.StartTime);
-		discordPresence.endTimestamp = SystemTime2Timet(Info.StartTime) + Info.Duration;
-		discordPresence.largeImageKey = "tvtest";
-		discordPresence.partyId = "";
-		discordPresence.partySize = 0;
-		discordPresence.partyMax = 0;
-		discordPresence.matchSecret = "";
-		discordPresence.joinSecret = "";
-		discordPresence.spectateSecret = "";
-		discordPresence.instance = 0;
-		Discord_UpdatePresence(&discordPresence);
+	std::string channelName;
+	std::string eventNamed;
+	time_t start;
+	time_t end;
+	
+	if (m_pApp->GetCurrentProgramInfo(&Info)) {
+		eventNamed = wide_to_utf8(Info.pszEventName);
+		end = SystemTime2Timet(Info.StartTime) + Info.Duration;
+		start = SystemTime2Timet(Info.StartTime);
 	}
+	if (m_pApp->GetCurrentChannelInfo(&ChannelInfo) ) {
+		m_pApp->AddLog(ChannelInfo.szChannelName);
+		channelName =  wide_to_utf8(ChannelInfo.szChannelName);
+	}
+	DiscordRichPresence discordPresence;
+	memset(&discordPresence, 0, sizeof(discordPresence));
+	discordPresence.details = channelName.c_str();
+	discordPresence.state = eventNamed.c_str();
+	discordPresence.startTimestamp = start;
+	discordPresence.endTimestamp = end;
+	discordPresence.largeImageKey = "tvtest";
+	discordPresence.partyId = "";
+	discordPresence.partySize = 0;
+	discordPresence.partyMax = 0;
+	discordPresence.matchSecret = "";
+	discordPresence.joinSecret = "";
+	discordPresence.spectateSecret = "";
+	discordPresence.instance = 0;
+	Discord_UpdatePresence(&discordPresence);
 }
+
 
 time_t CMyPlugin::SystemTime2Timet(const SYSTEMTIME& st)
 {
@@ -102,6 +115,9 @@ LRESULT CALLBACK CMyPlugin::EventCallback(UINT Event, LPARAM lParam1, LPARAM lPa
 		}
 		return TRUE;
 	case TVTest::EVENT_CHANNELCHANGE:
+		pThis->UpdateState();
+		return TRUE;
+	case TVTest::EVENT_SERVICECHANGE:
 		pThis->UpdateState();
 		return TRUE;
 	}
