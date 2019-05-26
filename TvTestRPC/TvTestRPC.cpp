@@ -114,6 +114,9 @@ LRESULT CALLBACK CMyPlugin::EventCallback(UINT Event, LPARAM lParam1, LPARAM lPa
 			Discord_ClearPresence();
 		}
 		return TRUE;
+	case TVTest::EVENT_AUDIOSTREAMCHANGE:
+		pThis->UpdateState();
+		return TRUE;
 	case TVTest::EVENT_SERVICEUPDATE:
 		pThis->UpdateState();
 		return TRUE;
