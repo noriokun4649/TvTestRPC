@@ -24,7 +24,7 @@ public:
 		pInfo->Type = TVTest::PLUGIN_TYPE_NORMAL;
 		pInfo->Flags = 0;
 		pInfo->pszPluginName = L"TvTest RPC";
-		pInfo->pszCopyright = L"(c) 2019 noriokun4649";
+		pInfo->pszCopyright = L"(c) 2019-2020 noriokun4649";
 		pInfo->pszDescription = L"DiscordRPCをTvTestで実現します。Discordで視聴中のチャンネルなどの情報が通知されます。";
 		return true; 
 	}
