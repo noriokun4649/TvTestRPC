@@ -14,11 +14,6 @@ public:
 	void UpdateState();
 	time_t SystemTime2Timet(const SYSTEMTIME&);
 
-	DWORD GetVersion() override
-	{
-		return TVTEST_PLUGIN_VERSION_(0,0,14);
-	}
-
 	bool GetPluginInfo(TVTest::PluginInfo *pInfo) override
 	{
 		pInfo->Type = TVTest::PLUGIN_TYPE_NORMAL;
