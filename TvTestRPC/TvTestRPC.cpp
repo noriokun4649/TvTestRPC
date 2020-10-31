@@ -9,7 +9,7 @@
 
 class CMyPlugin : public TVTest::CTVTestPlugin
 {
-	DiscordEventHandlers handlers;
+	DiscordEventHandlers handlers{};
 	static LRESULT CALLBACK EventCallback(UINT Event, LPARAM lParam1, LPARAM lParam2, void* pClientData);
 	static INT_PTR CALLBACK SettingsDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam, void* pClientData);
 	bool ShowDialog(HWND hwndOwner);
@@ -52,7 +52,6 @@ public:
 	}
 };
 
-
 bool CMyPlugin::InitSettings() {
 	::GetModuleFileName(g_hinstDLL, m_szIniFileName, MAX_PATH);
 	::PathRenameExtension(m_szIniFileName, TEXT(".ini"));
@@ -69,6 +68,8 @@ void CMyPlugin::InitDiscord()
 
 void CMyPlugin::UpdateState()
 {
+	DiscordRichPresence discordPresence;
+	memset(&discordPresence, 0, sizeof(discordPresence));
 	TVTest::ProgramInfo Info;
 	Info.Size = sizeof(Info);
 	wchar_t eventName[128];
@@ -82,13 +83,13 @@ void CMyPlugin::UpdateState()
 	Info.MaxEventExtText = sizeof(eventExtText) / sizeof(eventExtText[0]);
 	std::string channelName;
 	std::string eventNamed;
-	time_t start;
-	time_t end;
 
 	if (m_pApp->GetCurrentProgramInfo(&Info)) {
 		eventNamed = wide_to_utf8(Info.pszEventName);
-		end = SystemTime2Timet(Info.StartTime) + Info.Duration;
-		start = SystemTime2Timet(Info.StartTime);
+		time_t start = SystemTime2Timet(Info.StartTime);
+		time_t end = SystemTime2Timet(Info.StartTime) + Info.Duration;
+		discordPresence.startTimestamp = start;
+		discordPresence.endTimestamp = end;
 	}
 	if (!conf_mode) {
 		TVTest::ServiceInfo Service;
@@ -104,12 +105,8 @@ void CMyPlugin::UpdateState()
 			channelName = wide_to_utf8(ChannelInfo.szChannelName);
 		}
 	}
-	DiscordRichPresence discordPresence;
-	memset(&discordPresence, 0, sizeof(discordPresence));
 	discordPresence.details = channelName.c_str();
 	discordPresence.state = eventNamed.c_str();
-	discordPresence.startTimestamp = start;
-	discordPresence.endTimestamp = end;
 	discordPresence.largeImageKey = "tvtest";
 	discordPresence.partyId = "";
 	discordPresence.partySize = 0;
@@ -119,6 +116,7 @@ void CMyPlugin::UpdateState()
 	discordPresence.spectateSecret = "";
 	discordPresence.instance = 0;
 	Discord_UpdatePresence(&discordPresence);
+	
 }
 
 
