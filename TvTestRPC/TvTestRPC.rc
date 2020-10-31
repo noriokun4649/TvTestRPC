@@ -50,15 +50,15 @@ END
 // Dialog
 //
 
-IDD_DIALOG1 DIALOGEX 0, 0, 188, 66
+IDD_DIALOG1 DIALOGEX 0, 0, 168, 62
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "TvTestRPCの設定"
-FONT 8, "メイリオ", 400, 0, 0x80
+FONT 9, "Meiryo UI", 400, 0, 0x0
 BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,72,45,50,14
-    PUSHBUTTON      "キャンセル",IDCANCEL,131,45,50,14
-    CONTROL         "サービス名の代わりにチャンネル名を通知する。",IDC_CHECK1,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,9,154,10
-    LTEXT           "※チャンネル名はBonDriverに依存します。\n　TvTplayなどでチャンネルを正しく通知したい場合は\n　チェックを外してください。",IDC_STATIC,15,20,159,24
+    DEFPUSHBUTTON   "OK",IDOK,53,44,50,14
+    PUSHBUTTON      "キャンセル",IDCANCEL,108,44,50,14
+    CONTROL         "サービス名の代わりにチャンネル名を通知する。",IDC_CHECK1,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,3,154,10
+    LTEXT           "※チャンネル名はBonDriverに依存します。\n　TvtPlayなどでチャンネルを正しく通知したい場合は\n　チェックを外してください。",IDC_STATIC,9,17,149,24
 END
 
 
@@ -72,10 +72,7 @@ GUIDELINES DESIGNINFO
 BEGIN
     IDD_DIALOG1, DIALOG
     BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 181
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 59
+        BOTTOMMARGIN, 58
     END
 END
 #endif    // APSTUDIO_INVOKED
