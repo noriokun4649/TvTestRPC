@@ -13,7 +13,6 @@ class CMyPlugin : public TVTest::CTVTestPlugin
 	static LRESULT CALLBACK EventCallback(UINT Event, LPARAM lParam1, LPARAM lParam2, void* pClientData);
 	static INT_PTR CALLBACK SettingsDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam, void* pClientData);
 	bool ShowDialog(HWND hwndOwner);
-	POINT m_SettingsDialogPos;
 	TCHAR m_szIniFileName[MAX_PATH];
 	bool conf_mode = false;
 	bool conf_isFinalized = false;
@@ -21,7 +20,6 @@ class CMyPlugin : public TVTest::CTVTestPlugin
 	bool pluginState = false;
 	void InitDiscord();
 	void UpdateState();
-	static const int DEFAULT_POS = INT_MIN;
 
 public:
 	time_t SystemTime2Timet(const SYSTEMTIME&);
@@ -144,10 +142,6 @@ bool CMyPlugin::ShowDialog(HWND hwndOwner) {
 	Info.pMessageFunc = SettingsDlgProc;
 	Info.pClientData = this;
 	Info.hwndOwner = hwndOwner;
-	if (m_SettingsDialogPos.x != DEFAULT_POS && m_SettingsDialogPos.y != DEFAULT_POS) {
-		Info.Flags |= TVTest::SHOW_DIALOG_FLAG_POSITION;
-		Info.Position = m_SettingsDialogPos;
-	}
 
 	return m_pApp->ShowDialog(&Info) == IDOK;
 }
