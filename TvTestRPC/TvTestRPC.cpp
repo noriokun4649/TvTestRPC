@@ -5,6 +5,7 @@
 #include <time.h>
 #include <shlwapi.h>
 #include "resource.h"
+#include <vector>
 #pragma comment(lib,"shlwapi.lib")
 
 class CMyPlugin : public TVTest::CTVTestPlugin
@@ -20,6 +21,7 @@ class CMyPlugin : public TVTest::CTVTestPlugin
 	bool pluginState = false;
 	void InitDiscord();
 	void UpdateState();
+	const std::vector<WORD> knownIds = { 32736, 32737, 32738, 32739, 32740, 32741, 3274, 32742, 32327, 32375, 32391};
 
 public:
 	time_t SystemTime2Timet(const SYSTEMTIME&);
@@ -71,7 +73,11 @@ void CMyPlugin::UpdateState()
 	DiscordRichPresence discordPresence;
 	memset(&discordPresence, 0, sizeof(discordPresence));
 	TVTest::ProgramInfo Info;
+	TVTest::ServiceInfo Service;
+	TVTest::ChannelInfo ChannelInfo;
 	Info.Size = sizeof(Info);
+	Service.Size = sizeof(Service);
+	ChannelInfo.Size = sizeof(ChannelInfo);
 	wchar_t eventName[128];
 	wchar_t eventText[128];
 	wchar_t eventExtText[128];
@@ -86,28 +92,39 @@ void CMyPlugin::UpdateState()
 
 	if (m_pApp->GetCurrentProgramInfo(&Info)) {
 		eventNamed = wide_to_utf8(Info.pszEventName);
-		time_t start = SystemTime2Timet(Info.StartTime);
-		time_t end = SystemTime2Timet(Info.StartTime) + Info.Duration;
+		auto start = SystemTime2Timet(Info.StartTime);
+		auto end = SystemTime2Timet(Info.StartTime) + Info.Duration;
 		discordPresence.startTimestamp = start;
 		discordPresence.endTimestamp = end;
 	}
-	if (!conf_mode) {
-		TVTest::ServiceInfo Service;
-		Service.Size = sizeof(Service);
-		if (m_pApp->GetServiceInfo(0, &Service)) {
+
+	if (m_pApp->GetServiceInfo(0, &Service) && m_pApp->GetCurrentChannelInfo(&ChannelInfo)) {
+		if (!conf_mode) {
 			channelName = wide_to_utf8(Service.szServiceName);
 		}
-	}
-	else {
-		TVTest::ChannelInfo ChannelInfo;
-		ChannelInfo.Size = sizeof(ChannelInfo);
-		if (m_pApp->GetCurrentChannelInfo(&ChannelInfo)) {
+		else {
 			channelName = wide_to_utf8(ChannelInfo.szChannelName);
 		}
+
+		auto id = ChannelInfo.NetworkID;
+		auto isId = find(knownIds.begin(), knownIds.end(), id) != knownIds.end();
+
+		if (isId) {
+			auto netId = std::to_string(id);
+			discordPresence.largeImageKey = netId.c_str();
+			discordPresence.smallImageKey = "tvtest";
+			discordPresence.smallImageText = "TvTest";
+		}
+		else {
+			discordPresence.largeImageKey = "tvtest";
+			discordPresence.smallImageKey = "";
+			discordPresence.smallImageText = "";
+		}
 	}
+
 	discordPresence.details = channelName.c_str();
+	discordPresence.largeImageText = channelName.c_str();
 	discordPresence.state = eventNamed.c_str();
-	discordPresence.largeImageKey = "tvtest";
 	discordPresence.partyId = "";
 	discordPresence.partySize = 0;
 	discordPresence.partyMax = 0;
@@ -116,7 +133,7 @@ void CMyPlugin::UpdateState()
 	discordPresence.spectateSecret = "";
 	discordPresence.instance = 0;
 	Discord_UpdatePresence(&discordPresence);
-	
+
 }
 
 
@@ -148,7 +165,7 @@ INT_PTR CALLBACK CMyPlugin::SettingsDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam,
 	CMyPlugin* pThis = static_cast<CMyPlugin*>(pClientData);
 	switch (uMsg)
 	{
-	case WM_INITDIALOG: 
+	case WM_INITDIALOG:
 		::CheckDlgButton(hDlg, IDC_CHECK1, pThis->conf_mode ? BST_CHECKED : BST_UNCHECKED);
 		return TRUE;
 	case WM_COMMAND:
