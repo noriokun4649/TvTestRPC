@@ -211,10 +211,7 @@ LRESULT CALLBACK CMyPlugin::EventCallback(UINT Event, LPARAM lParam1, LPARAM lPa
 		}
 		return TRUE;
 	case TVTest::EVENT_SERVICECHANGE:
-		pThis->UpdateState();
 	case TVTest::EVENT_CHANNELCHANGE:
-		pThis->UpdateState();
-		return TRUE;
 	case TVTest::EVENT_SERVICEUPDATE:
 		pThis->UpdateState();
 		return TRUE;
