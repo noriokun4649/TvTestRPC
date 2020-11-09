@@ -50,15 +50,18 @@ END
 // Dialog
 //
 
-IDD_DIALOG1 DIALOGEX 0, 0, 168, 62
+IDD_DIALOG1 DIALOGEX 0, 0, 166, 112
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "TvTestRPCの設定"
 FONT 9, "Meiryo UI", 400, 0, 0x0
 BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,53,44,50,14
-    PUSHBUTTON      "キャンセル",IDCANCEL,108,44,50,14
-    CONTROL         "サービス名の代わりにチャンネル名を通知する。",IDC_CHECK1,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,3,154,10
-    LTEXT           "※チャンネル名はBonDriverに依存します。\n　TvtPlayなどでチャンネルを正しく通知したい場合は\n　チェックを外してください。",IDC_STATIC,9,17,149,24
+    DEFPUSHBUTTON   "OK",IDOK,55,91,50,14
+    PUSHBUTTON      "キャンセル",IDCANCEL,109,91,50,14
+    CONTROL         "サービス名の代わりにチャンネル名を通知する。",IDC_CHECK1,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,5,2,138,10
+    LTEXT           "※局ロゴの通知は、関東広域とMX、tvk、チバテレのみ対応。",IDC_STATIC,7,69,139,19
+    CONTROL         "番組の残り時間の代わりに経過時間を通知する。",IDC_CHECK2,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,41,149,16
+    CONTROL         "局ロゴを通知する。",IDC_CHECK3,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,58,67,10
+    LTEXT           "※チャンネル名はBonDriverに依存します。\n　TvtPlayなどでチャンネルを正しく通知したい場合は\n　チェックを外してください。",IDC_STATIC,7,14,149,24
 END
 
 
@@ -72,7 +75,8 @@ GUIDELINES DESIGNINFO
 BEGIN
     IDD_DIALOG1, DIALOG
     BEGIN
-        BOTTOMMARGIN, 58
+        RIGHTMARGIN, 159
+        BOTTOMMARGIN, 105
     END
 END
 #endif    // APSTUDIO_INVOKED
