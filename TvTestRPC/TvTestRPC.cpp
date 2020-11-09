@@ -15,10 +15,13 @@ class CMyPlugin : public TVTest::CTVTestPlugin
 	static INT_PTR CALLBACK SettingsDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam, void* pClientData);
 	bool ShowDialog(HWND hwndOwner);
 	TCHAR m_szIniFileName[MAX_PATH];
-	bool conf_mode = false;
+	bool conf_ChannelMode = false;
+	bool conf_TimeMode = false;
+	bool conf_LogoMode = false;
 	bool conf_isFinalized = false;
 	bool InitSettings();
 	bool pluginState = false;
+	void SaveConf();
 	void InitDiscord();
 	void UpdateState();
 	const std::vector<WORD> knownIds = { 32736, 32737, 32738, 32739, 32740, 32741, 3274, 32742, 32327, 32375, 32391};
@@ -50,6 +53,7 @@ public:
 	bool Finalize() override
 	{
 		Discord_Shutdown();
+		SaveConf();
 		return true;
 	}
 };
@@ -57,7 +61,9 @@ public:
 bool CMyPlugin::InitSettings() {
 	::GetModuleFileName(g_hinstDLL, m_szIniFileName, MAX_PATH);
 	::PathRenameExtension(m_szIniFileName, TEXT(".ini"));
-	conf_mode = ::GetPrivateProfileInt(TEXT("Settings"), TEXT("Mode"), conf_mode, m_szIniFileName) != 0;
+	conf_ChannelMode = ::GetPrivateProfileInt(TEXT("Settings"), TEXT("Mode"), conf_ChannelMode, m_szIniFileName) != 0;
+	conf_TimeMode = ::GetPrivateProfileInt(TEXT("Settings"), TEXT("TimeMode"), conf_ChannelMode, m_szIniFileName) != 0;
+	conf_LogoMode = ::GetPrivateProfileInt(TEXT("Settings"), TEXT("LogoMode"), conf_ChannelMode, m_szIniFileName) != 0;
 	m_pApp->AddLog(m_szIniFileName);
 	conf_isFinalized = true;
 	return true;
@@ -95,11 +101,11 @@ void CMyPlugin::UpdateState()
 		auto start = SystemTime2Timet(Info.StartTime);
 		auto end = SystemTime2Timet(Info.StartTime) + Info.Duration;
 		discordPresence.startTimestamp = start;
-		discordPresence.endTimestamp = end;
+		if (!conf_TimeMode) discordPresence.endTimestamp = end;
 	}
 
 	if (m_pApp->GetServiceInfo(0, &Service) && m_pApp->GetCurrentChannelInfo(&ChannelInfo)) {
-		if (!conf_mode) {
+		if (!conf_ChannelMode) {
 			channelName = wide_to_utf8(Service.szServiceName);
 		}
 		else {
@@ -109,7 +115,7 @@ void CMyPlugin::UpdateState()
 		auto id = ChannelInfo.NetworkID;
 		auto isId = find(knownIds.begin(), knownIds.end(), id) != knownIds.end();
 
-		if (isId) {
+		if (isId && conf_LogoMode) {
 			auto netId = std::to_string(id);
 			discordPresence.largeImageKey = netId.c_str();
 			discordPresence.smallImageKey = "tvtest";
@@ -136,6 +142,19 @@ void CMyPlugin::UpdateState()
 
 }
 
+void CMyPlugin::SaveConf() {
+	if (conf_isFinalized) {
+		struct IntString {
+			IntString(int Value) { ::wsprintf(m_szBuffer, TEXT("%d"), Value); }
+			operator LPCTSTR() const { return m_szBuffer; }
+			TCHAR m_szBuffer[16];
+		};
+
+		::WritePrivateProfileString(TEXT("Settings"), TEXT("Mode"), IntString(conf_ChannelMode), m_szIniFileName);
+		::WritePrivateProfileString(TEXT("Settings"), TEXT("TimeMode"), IntString(conf_TimeMode), m_szIniFileName);
+		::WritePrivateProfileString(TEXT("Settings"), TEXT("LogoMode"), IntString(conf_LogoMode), m_szIniFileName);
+	}
+}
 
 time_t CMyPlugin::SystemTime2Timet(const SYSTEMTIME& st)
 {
@@ -166,21 +185,16 @@ INT_PTR CALLBACK CMyPlugin::SettingsDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam,
 	switch (uMsg)
 	{
 	case WM_INITDIALOG:
-		::CheckDlgButton(hDlg, IDC_CHECK1, pThis->conf_mode ? BST_CHECKED : BST_UNCHECKED);
+		::CheckDlgButton(hDlg, IDC_CHECK1, pThis->conf_ChannelMode ? BST_CHECKED : BST_UNCHECKED);
+		::CheckDlgButton(hDlg, IDC_CHECK2, pThis->conf_TimeMode ? BST_CHECKED : BST_UNCHECKED);
+		::CheckDlgButton(hDlg, IDC_CHECK3, pThis->conf_LogoMode ? BST_CHECKED : BST_UNCHECKED);
 		return TRUE;
 	case WM_COMMAND:
 		switch (LOWORD(wParam)) {
 		case IDOK:
-			pThis->conf_mode = ::IsDlgButtonChecked(hDlg, IDC_CHECK1) == BST_CHECKED;
-			if (pThis->conf_isFinalized) {
-				struct IntString {
-					IntString(int Value) { ::wsprintf(m_szBuffer, TEXT("%d"), Value); }
-					operator LPCTSTR() const { return m_szBuffer; }
-					TCHAR m_szBuffer[16];
-				};
-
-				::WritePrivateProfileString(TEXT("Settings"), TEXT("Mode"), IntString(pThis->conf_mode), pThis->m_szIniFileName);
-			}
+			pThis->conf_ChannelMode = ::IsDlgButtonChecked(hDlg, IDC_CHECK1) == BST_CHECKED;
+			pThis->conf_TimeMode = ::IsDlgButtonChecked(hDlg, IDC_CHECK2) == BST_CHECKED;
+			pThis->conf_LogoMode = ::IsDlgButtonChecked(hDlg, IDC_CHECK3) == BST_CHECKED;
 			pThis->UpdateState();
 		case IDCANCEL:
 			::EndDialog(hDlg, LOWORD(wParam));
