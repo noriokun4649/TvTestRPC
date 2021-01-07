@@ -1,4 +1,5 @@
 # TvTestRPC
+![GitHub all releases](https://img.shields.io/github/downloads/noriokun4649/TvTestRPC/total) ![GitHub](https://img.shields.io/github/license/noriokun4649/TvTestRPC) ![GitHub release (latest by date)](https://img.shields.io/github/v/release/noriokun4649/TvTestRPC)  
 TvTestでDiscordのRPCが使えるようになるプラグインです。
 
 このプログラムで利用されているOSSライセンス
